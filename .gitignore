@@ -1,0 +1,17 @@
+node_modules/
+
+# ข้อมูลผู้ใช้ + ความลับ (งาน/แบรนด์/ตั้งค่า/ไฟล์แนบ/โลโก้ + LINE token/PIN) — ห้ามขึ้น repo
+data/*
+!data/.gitkeep
+
+.env
+cloudflared.exe
+
+# Claude Code config + สกิล (เฉพาะเครื่อง)
+.claude/
+
+npm-debug.log*
+.DS_Store
+
+# impeccable skill local config
+.impeccable/

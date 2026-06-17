@@ -1,0 +1,18 @@
+{
+  "name": "ad-ops-dashboard",
+  "version": "2.0.0",
+  "description": "ศูนย์รวมงานยิงแอด/บูสต์โพสต์ แยกตามแบรนด์ + แจ้งเตือน LINE (Ad Operations Dashboard)",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "notify": "node src/jobs/notify.js",
+    "online": "node src/jobs/online.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

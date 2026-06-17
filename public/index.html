@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ad Ops Dashboard — ศูนย์รวมงานยิงแอด</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // ปรับ line-height ให้เหมาะกับสระบน-ล่างของภาษาไทย (ค่า default ของ Tailwind ออกแบบมาเพื่อ Latin)
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontSize: {
+            xs: ["0.75rem", { lineHeight: "1.2rem" }],
+            sm: ["0.875rem", { lineHeight: "1.5rem" }],
+            base: ["1rem", { lineHeight: "1.7rem" }],
+          },
+        },
+      },
+    };
+  </script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- pin Babel 7: react preset default = classic runtime (Babel 8 เปลี่ยนเป็น automatic ซึ่ง emit import แล้วรันใน <script> ธรรมดาไม่ได้ → จอขาว) -->
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --ease-out: cubic-bezier(0.22, 1, 0.36, 1); --ink: #0a0a0b; }
+    /* Bold Editorial: พื้นขาวสะอาดเป็นกลาง (ไม่ครีม) + หมึกเกือบดำคอนทราสต์สูง */
+    html { background-color: #fafafa; color-scheme: light; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      color: #27272a;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    /* ตัวเลขความกว้างเท่ากัน — ตาราง/KPI เทียบหลักกันได้ด้วยตา */
+    .tnum { font-variant-numeric: tabular-nums; }
+
+    /* ตัวเลข/ป้าย Latin แบบ editorial: Space Grotesk คม + tabular */
+    .num { font-family: 'Space Grotesk', 'Sarabun', sans-serif; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; letter-spacing: -0.01em; }
+    /* หัวข้อแสดงผลใหญ่: แน่น คม */
+    .display { font-family: 'Space Grotesk', 'Sarabun', sans-serif; letter-spacing: -0.03em; }
+    /* คิกเกอร์เล็กแบบนิตยสาร (ใช้อย่างตั้งใจ ไม่ใช่ทุก section) */
+    .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #a1a1aa; }
+
+    /* โฟกัสด้วยคีย์บอร์ดเห็นชัดทุก control (หมึกดำ editorial) */
+    :focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    /* จังหวะ interaction มาตรฐานเดียวทั้งแอป (สื่อสถานะ ไม่ใช่ตกแต่ง) */
+    button, a, select, input, textarea, [role="button"] {
+      transition: background-color .15s var(--ease-out), border-color .15s var(--ease-out),
+                  color .15s var(--ease-out), box-shadow .15s var(--ease-out), opacity .15s var(--ease-out);
+    }
+
+    /* Modal: เข้าฉากสั้น ๆ บอกว่าเพิ่งเปิด */
+    @keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes panel-in { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+    .modal-overlay { animation: overlay-in .15s var(--ease-out) both; }
+    .modal-panel { animation: panel-in .22s var(--ease-out) both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    /* การ์ด: เงานุ่มแบบพรีเมียม + ยกขึ้นนิดตอน hover (สื่อว่ากดได้/มีชีวิต) */
+    .surface { box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px -1px rgba(15, 23, 42, .06); }
+    .surface-hover { transition: box-shadow .2s var(--ease-out), border-color .2s var(--ease-out), transform .2s var(--ease-out); }
+    .surface-hover:hover { box-shadow: 0 12px 28px -10px rgba(15, 23, 42, .18); border-color: rgb(203 213 225); }
+
+    /* หัวข้อกลุ่ม: ตัวเล็ก เน้นด้วย weight+tracking ไม่ใช่ขนาด (ลำดับสายตาคมแต่ไม่ตะโกน) */
+    .section-label { font-size: 12.5px; font-weight: 700; letter-spacing: .01em; }
+
+    h1, h2, h3 { text-wrap: balance; }
+
+    ::selection { background: var(--ink); color: #fff; }
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-[#fafafa]">
+  <div id="root"></div>
+
+  <!-- โหลดตามลำดับ: utils -> components -> views -> settings -> app -->
+  <script type="text/babel" data-presets="react" src="js/utils.js"></script>
+  <script type="text/babel" data-presets="react" src="js/components.js"></script>
+  <script type="text/babel" data-presets="react" src="js/views.js"></script>
+  <script type="text/babel" data-presets="react" src="js/settings.js"></script>
+  <script type="text/babel" data-presets="react" src="js/app.js"></script>
+</body>
+</html>

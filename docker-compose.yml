@@ -1,0 +1,25 @@
+services:
+  dashboard:
+    build: .
+    container_name: ad-ops-dashboard
+    restart: unless-stopped
+    ports:
+      - "3200:3200"
+    environment:
+      TZ: Asia/Bangkok
+      DATA_DIR: /app/data
+    volumes:
+      # ข้อมูลงาน/แบรนด์/การตั้งค่า เก็บไว้นอก container (ไม่หายเมื่อ rebuild)
+      - ./data:/app/data
+
+  # บริการแจ้งเตือน LINE ทุกเช้า (รันแล้วจบ — ใช้คู่กับ cron/Task Scheduler ของเครื่อง)
+  # เรียกด้วย:  docker compose run --rm notify
+  notify:
+    build: .
+    profiles: ["tools"]
+    environment:
+      TZ: Asia/Bangkok
+      DATA_DIR: /app/data
+    volumes:
+      - ./data:/app/data
+    command: ["node", "src/jobs/notify.js"]
